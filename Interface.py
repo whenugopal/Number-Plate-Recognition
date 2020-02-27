@@ -9,9 +9,17 @@ from tkinter import filedialog
 import os
 import shutil
 from tkinter import messagebox
+from openpyxl import Workbook
+import csv
+
 
 import numberPlateRecognition
 import trainRecognizeCharacters
+
+#Excel Sheet
+book = Workbook()
+sheet = book.active
+sheet.insert_cols(idx=100)
 
 # Tkinter 
 form = Tk()
@@ -23,10 +31,12 @@ tab_parent = ttk.Notebook(form)
 tab1 = ttk.Frame(tab_parent)
 tab2 = ttk.Frame(tab_parent)
 tab3 = ttk.Frame(tab_parent)
+tab4 = ttk.Frame(tab_parent)
 
 tab_parent.add(tab1, text="Image")
 tab_parent.add(tab2, text="Video")
 tab_parent.add(tab3, text="Train Model")
+tab_parent.add(tab4, text="Group")
 
 tab_parent.pack(expand=1, fill='both')
 
@@ -58,6 +68,47 @@ def openfiler_image():
         messagebox.showerror('ERROR !!',"Couldn't find the Licence Plate/Plate Number, Please select a proper image")
     else:
         messagebox.showinfo("Plate Detected !", f'Predicted Plate Number :{detected_plate_number}')
+        with open('recorded_plate.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([detected_plate_number])
+        
+        
+
+# looper
+
+def looper():
+    form.foldername = filedialog.askdirectory(initialdir = '/', title='Select a File')
+    file_name_label = Label(tab4, text="FileName:: "+form.foldername, font=('times', 15, ' bold '))
+    file_name_label.place(relx=0.0, rely=0.8,  )
+    if(form.foldername == ""):
+        messagebox.showerror('ERROR', f'Please select a folder')
+    else:
+        messagebox.showinfo("Processing.....", f"Please wait for a while, This might take a minute or two.")
+    
+    with open('recorded_plates.csv', 'a', newline='') as file:
+        # writer = csv.writer(file)
+        # writer.writerow([detected_plate_number])
+        for filename in os.listdir(form.foldername):
+            if filename.endswith(".jpg") or filename.endswith(".png"): 
+                # print(os.path.join(form.foldername, filename))
+                detectVideo = 0
+                detected_plate_number = numberPlateRecognition.detectPlateNumber(filename, detectVideo)
+                if(detected_plate_number == ""):
+                    messagebox.showerror('ERROR !!',"Couldn't find the Licence Plate/Plate Number, Please select a proper image")
+                else:
+                    messagebox.showinfo("Plate Detected !", f'Predicted Plate Number :{detected_plate_number}')
+                    with open('recorded_plates.csv', 'a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([detected_plate_number])
+                continue
+            else:
+                continue
+
+
+
+
+
+
 
 # To open a Video file 
 def openfiler_videos():
@@ -73,14 +124,19 @@ def openfiler_videos():
         messagebox.showerror('ERROR !!',f'Please select a Video')
     else:
         messagebox.showinfo("Processing.....", f"Please wait for a while, This might take a minute or two.")
-
+    
     detected_plate_number = numberPlateRecognition.detectPlateNumber(form.filename, detectVideo)
+    
+
 
     if(detected_plate_number == ""):
         messagebox.showerror('ERROR',f"Could't find the Licence Plate/Plate number, Please select a proper video.")
     else:
         messagebox.showinfo("Plate Detected",f'Predicted Plate Number :{detected_plate_number}')
-
+        with open('recorded_plates.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([detected_plate_number])
+        
 #Train Model
 def getmodel():
     trainedmodel = trainRecognizeCharacters.trainedModel()
@@ -132,6 +188,18 @@ select_image_btn.place(relx=0.40, rely=0.55)
 
 select_file_text = Label(tab3, text="Train Model", font=('times', 16)) 
 select_file_text.place(relx=0.45, rely=0.45)
+
+# ===================================== WIDGETS FOR TAB 4 ==============================================
+
+label_title = Label(tab4, text="Number Plate Recognition",width=60  ,height=2 , bg='Orange', fg='white' ,font=('times', 30, ' bold ') ) 
+label_title.place(x=0,y=0 )
+# label_title = Label(tab3, text="Train Model",width=60  ,font=('times', 30, ' bold ') ) 
+label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
+select_image_btn = Button(tab4, text="Select the folder", bg="red", fg="white", command=looper, font=('times', 20, ' bold '))
+select_image_btn.place(relx=0.40, rely=0.55)
+
+# select_file_text = Label(tab3, text="Train Model", font=('times', 16)) 
+# select_file_text.place(relx=0.45, rely=0.45)
 
 # ===================================== Quit Button ==============================================
 
