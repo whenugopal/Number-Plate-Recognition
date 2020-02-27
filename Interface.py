@@ -9,17 +9,12 @@ from tkinter import filedialog
 import os
 import shutil
 from tkinter import messagebox
-from openpyxl import Workbook
+# from openpyxl import Workbook
 import csv
 
 
 import numberPlateRecognition
 import trainRecognizeCharacters
-
-#Excel Sheet
-book = Workbook()
-sheet = book.active
-sheet.insert_cols(idx=100)
 
 # Tkinter 
 form = Tk()
@@ -32,12 +27,13 @@ tab1 = ttk.Frame(tab_parent)
 tab2 = ttk.Frame(tab_parent)
 tab3 = ttk.Frame(tab_parent)
 tab4 = ttk.Frame(tab_parent)
+tab5 = ttk.Frame(tab_parent)
 
-tab_parent.add(tab1, text="Image")
-tab_parent.add(tab2, text="Video")
-tab_parent.add(tab3, text="Train Model")
-tab_parent.add(tab4, text="Group")
-
+tab_parent.add(tab1, text="Single Image")
+tab_parent.add(tab2, text="Single Video")
+tab_parent.add(tab3, text="Image Collection")
+tab_parent.add(tab4, text="Video Collection")
+tab_parent.add(tab5, text="Train Model")
 tab_parent.pack(expand=1, fill='both')
 
 # ===================================== FUNCTIONS ==============================================
@@ -72,43 +68,6 @@ def openfiler_image():
             writer = csv.writer(file)
             writer.writerow([detected_plate_number])
         
-        
-
-# looper
-
-def looper():
-    form.foldername = filedialog.askdirectory(initialdir = '/', title='Select a File')
-    file_name_label = Label(tab4, text="FileName:: "+form.foldername, font=('times', 15, ' bold '))
-    file_name_label.place(relx=0.0, rely=0.8,  )
-    if(form.foldername == ""):
-        messagebox.showerror('ERROR', f'Please select a folder')
-    else:
-        messagebox.showinfo("Processing.....", f"Please wait for a while, This might take a minute or two.")
-    
-    with open('recorded_plates.csv', 'a', newline='') as file:
-        # writer = csv.writer(file)
-        # writer.writerow([detected_plate_number])
-        for filename in os.listdir(form.foldername):
-            if filename.endswith(".jpg") or filename.endswith(".png"): 
-                # print(os.path.join(form.foldername, filename))
-                detectVideo = 0
-                detected_plate_number = numberPlateRecognition.detectPlateNumber(filename, detectVideo)
-                if(detected_plate_number == ""):
-                    messagebox.showerror('ERROR !!',"Couldn't find the Licence Plate/Plate Number, Please select a proper image")
-                else:
-                    messagebox.showinfo("Plate Detected !", f'Predicted Plate Number :{detected_plate_number}')
-                    with open('recorded_plates.csv', 'a', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow([detected_plate_number])
-                continue
-            else:
-                continue
-
-
-
-
-
-
 
 # To open a Video file 
 def openfiler_videos():
@@ -137,6 +96,66 @@ def openfiler_videos():
             writer = csv.writer(file)
             writer.writerow([detected_plate_number])
         
+
+# looper - Helps to go through the folders and select the various images
+
+def looper_image():
+    form.foldername = filedialog.askdirectory(initialdir = '/', title='Select a File')
+    file_name_label = Label(tab4, text="FileName:: "+form.foldername, font=('times', 15, ' bold '))
+    file_name_label.place(relx=0.0, rely=0.8,  )
+    if(form.foldername == ""):
+        messagebox.showerror('ERROR', f'Please select a folder')
+    else:
+        messagebox.showinfo("Processing.....", f"Please wait for a while, This might take a minute or two.")
+    
+    with open('recorded_plates.csv', 'a', newline='') as file:
+        # writer = csv.writer(file)
+        # writer.writerow([detected_plate_number])
+        for filename in os.listdir(form.foldername):
+            if filename.endswith(".jpg") or filename.endswith(".png"): 
+                # print(os.path.join(form.foldername, filename))
+                detectVideo = 0
+                detected_plate_number = numberPlateRecognition.detectPlateNumber(filename, detectVideo)
+                if(detected_plate_number == ""):
+                    messagebox.showerror('ERROR !!',"Couldn't find the Licence Plate/Plate Number, Please select a proper image")
+                else:
+                    messagebox.showinfo("Plate Detected !", f'Predicted Plate Number :{detected_plate_number}')
+                    with open('recorded_plates.csv', 'a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([detected_plate_number])
+                continue
+            else:
+                continue
+
+def looper_video():
+    form.foldername = filedialog.askdirectory(initialdir = '/', title='Select a File')
+    file_name_label = Label(tab4, text="FileName:: "+form.foldername, font=('times', 15, ' bold '))
+    file_name_label.place(relx=0.0, rely=0.8,  )
+    if(form.foldername == ""):
+        messagebox.showerror('ERROR', f'Please select a folder')
+    else:
+        messagebox.showinfo("Processing.....", f"Please wait for a while, This might take a minute or two.")
+    
+    with open('recorded_plates.csv', 'a', newline='') as file:
+        # writer = csv.writer(file)
+        # writer.writerow([detected_plate_number])
+        for filename in os.listdir(form.foldername):
+            if filename.endswith(".mp4") or filename.endswith(".avi") or filename.endswith(".mkv"): 
+                # print(os.path.join(form.foldername, filename))
+                detectVideo = 1
+                detected_plate_number = numberPlateRecognition.detectPlateNumber(filename, detectVideo)
+                if(detected_plate_number == ""):
+                    messagebox.showerror('ERROR !!',"Couldn't find the Licence Plate/Plate Number, Please select a proper image")
+                else:
+                    messagebox.showinfo("Plate Detected !", f'Predicted Plate Number :{detected_plate_number}')
+                    with open('recorded_plates.csv', 'a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([detected_plate_number])
+                continue
+            else:
+                continue
+
+      
 #Train Model
 def getmodel():
     trainedmodel = trainRecognizeCharacters.trainedModel()
@@ -160,13 +179,12 @@ select_image_btn.place(relx=0.45, rely=0.55)
 
 #Selected File name and location
 select_file_text = Label(tab1, text="Please Select an Image file", font=('times', 16)) 
-select_file_text.place(relx=0.45, rely=0.45)
-
+select_file_text.place(relx=0.44, rely=0.45)
 
 
 # ===================================== WIDGETS FOR TAB 2 ==============================================
 
-label_title = Label(tab2, text="Number Plate Recognition",width=60  ,height=2 , bg='Blue', fg='white' ,font=('times', 30, ' bold ') ) 
+label_title = Label(tab2, text="Number Plate Recognition",width=60  ,height=2 , bg='black', fg='white' ,font=('times', 30, ' bold ') ) 
 label_title.place(x=0,y=0 )
 label_title = Label(tab2, text="Using Video Files",width=60  ,font=('times', 30, ' bold ') ) 
 label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
@@ -174,32 +192,43 @@ select_image_btn = Button(tab2, text="Browse Videos", bg="red", fg="white", comm
 select_image_btn.place(relx=0.45, rely=0.55)
 
 select_file_text = Label(tab2, text="Please Select a Video file", font=('times', 16)) 
-select_file_text.place(relx=0.45, rely=0.45)
+select_file_text.place(relx=0.44, rely=0.45)
 
 
 # ===================================== WIDGETS FOR TAB 3 ==============================================
 
-label_title = Label(tab3, text="Number Plate Recognition",width=60  ,height=2 , bg='Orange', fg='white' ,font=('times', 30, ' bold ') ) 
+label_title = Label(tab3, text="Number Plate Recognition",width=60  ,height=2 , bg='black', fg='white' ,font=('times', 30, ' bold ') ) 
 label_title.place(x=0,y=0 )
 # label_title = Label(tab3, text="Train Model",width=60  ,font=('times', 30, ' bold ') ) 
-label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
-select_image_btn = Button(tab3, text="Click To Train Model", bg="red", fg="white", command=getmodel, font=('times', 20, ' bold '))
-select_image_btn.place(relx=0.40, rely=0.55)
+# label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
+select_image_btn = Button(tab3, text="Browse the folder", bg="red", fg="white", command=looper_image, font=('times', 20, ' bold '))
+select_image_btn.place(relx=0.45, rely=0.55)
+select_file_text = Label(tab3, text="Please Select the folder Containing Images", font=('times', 16)) 
+select_file_text.place(relx=0.41, rely=0.45)
 
-select_file_text = Label(tab3, text="Train Model", font=('times', 16)) 
-select_file_text.place(relx=0.45, rely=0.45)
 
 # ===================================== WIDGETS FOR TAB 4 ==============================================
 
-label_title = Label(tab4, text="Number Plate Recognition",width=60  ,height=2 , bg='Orange', fg='white' ,font=('times', 30, ' bold ') ) 
+label_title = Label(tab4, text="Number Plate Recognition",width=60  ,height=2 , bg='black', fg='white' ,font=('times', 30, ' bold ') ) 
 label_title.place(x=0,y=0 )
 # label_title = Label(tab3, text="Train Model",width=60  ,font=('times', 30, ' bold ') ) 
-label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
-select_image_btn = Button(tab4, text="Select the folder", bg="red", fg="white", command=looper, font=('times', 20, ' bold '))
-select_image_btn.place(relx=0.40, rely=0.55)
+# label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
+select_image_btn = Button(tab4, text="Browse the Folder", bg="red", fg="white", command=looper_video, font=('times', 20, ' bold '))
+select_image_btn.place(relx=0.45, rely=0.55)
+select_file_text = Label(tab4, text="Please Select the folder Containing Videos", font=('times', 16)) 
+select_file_text.place(relx=0.41, rely=0.45)
 
-# select_file_text = Label(tab3, text="Train Model", font=('times', 16)) 
-# select_file_text.place(relx=0.45, rely=0.45)
+# ===================================== WIDGETS FOR TAB 5 ==============================================
+
+label_title = Label(tab5, text="Number Plate Recognition",width=60  ,height=2 , bg='black', fg='white' ,font=('times', 30, ' bold ') ) 
+label_title.place(x=0,y=0 )
+# label_title = Label(tab3, text="Train Model",width=60  ,font=('times', 30, ' bold ') ) 
+# label_title.place(relx=0.0, rely=0.1, x=0,y=10 )
+select_image_btn = Button(tab5, text="Train Model", bg="red", fg="white", command=getmodel, font=('times', 20, ' bold '))
+select_image_btn.place(relx=0.45, rely=0.55)
+
+select_file_text = Label(tab5, text="Please Click to Train Model", font=('times', 16)) 
+select_file_text.place(relx=0.43, rely=0.45)
 
 # ===================================== Quit Button ==============================================
 
